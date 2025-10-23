@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useMap } from '@/hooks/useMap';
 import { useAddressSearch } from '@/hooks/useAddressSearch';
 import { useDistanceCalculation } from '@/hooks/useDistanceCalculation';
+import { AISidePanel } from './AISidePanel';
 import * as L from 'leaflet';
 import type { MarkerInfo } from '@/types';
 
@@ -33,6 +34,7 @@ export default function WalkmanMap() {
   const [markerInfos, setMarkerInfos] = useState<MarkerInfo[]>([]);
   const [walkingDistance, setWalkingDistance] = useState('- km');
   const [walkingTime, setWalkingTime] = useState('- 분');
+  const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
 
   // 거리 계산 및 표시
   const calculateAndDisplayDistance = useCallback(async () => {
@@ -205,113 +207,137 @@ export default function WalkmanMap() {
   };
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-2rem)] p-2">
-      {/* 지도 영역 */}
-      <div className="flex-1 rounded-2xl shadow-xl overflow-hidden">
-        <div id="map" className="h-full w-full"></div>
-      </div>
+    <div className="flex h-[calc(100vh-5rem)] p-2">
+      <div
+        className={`flex gap-6 transition-all duration-300 ${
+          isAIPanelOpen ? 'flex-1 mr-50' : 'flex-1'
+        }`}>
+        {/* 지도 영역 */}
+        <div className="flex-1 rounded-2xl shadow-xl overflow-hidden">
+          <div id="map" className="h-full w-full"></div>
+        </div>
 
-      {/* 정보 영역 */}
-      <div className="w-1/4 flex flex-col gap-4">
-        {/* 주소 검색 */}
-        <div className="bg-white rounded-2xl shadow-xl p-3">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            🔍 주소 검색
-          </h3>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && handleSearchAddress()}
-              placeholder="주소를 입력하세요"
-              className="flex-1 min-w-0 px-3 py-2 border text-black border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isAddressSearching}
-            />
+        {/* 정보 영역 */}
+        <div className="w-1/4 flex flex-col gap-4">
+          {/* 주소 검색 */}
+          <div className="bg-white rounded-2xl shadow-xl p-3">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              🔍 주소 검색
+            </h3>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && handleSearchAddress()}
+                placeholder="주소를 입력하세요"
+                className="flex-1 min-w-0 px-3 py-2 border text-black border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isAddressSearching}
+              />
+              <button
+                onClick={handleSearchAddress}
+                disabled={isAddressSearching || !searchQuery.trim()}
+                className="shrink-0 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                {isAddressSearching ? '검색 중...' : '검색'}
+              </button>
+            </div>
+          </div>
+
+          {/* 거리 정보 */}
+          <div className="bg-white rounded-2xl shadow-xl p-3">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              📏 거리 정보
+            </h3>
+            <div className="flex gap-2 mb-2">
+              <div className="flex-1 text-center p-2 bg-gray-50 rounded-lg">
+                <div className="text-sm text-gray-600">걷기 거리</div>
+                <div className="font-bold text-blue-600" id="walkingDistance">
+                  {walkingDistance}
+                </div>
+              </div>
+              <div className="flex-1 text-center p-2 bg-gray-50 rounded-lg">
+                <div className="text-sm text-gray-600">예상 시간</div>
+                <div className="font-bold text-green-600" id="walkingTime">
+                  {walkingTime}
+                </div>
+              </div>
+            </div>
             <button
-              onClick={handleSearchAddress}
-              disabled={isAddressSearching || !searchQuery.trim()}
-              className="shrink-0 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed">
-              {isAddressSearching ? '검색 중...' : '검색'}
+              onClick={clearMarkers}
+              className="w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+              마커 초기화
             </button>
           </div>
-        </div>
 
-        {/* 거리 정보 */}
-        <div className="bg-white rounded-2xl shadow-xl p-3">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            📏 거리 정보
-          </h3>
-          <div className="flex gap-2 mb-2">
-            <div className="flex-1 text-center p-2 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600">걷기 거리</div>
-              <div className="font-bold text-blue-600" id="walkingDistance">
-                {walkingDistance}
-              </div>
-            </div>
-            <div className="flex-1 text-center p-2 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600">예상 시간</div>
-              <div className="font-bold text-green-600" id="walkingTime">
-                {walkingTime}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={clearMarkers}
-            className="w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-            마커 초기화
-          </button>
-        </div>
+          {/* 마커 정보 카드들 */}
+          <div className="bg-white rounded-2xl shadow-xl p-3 flex-1 flex flex-col min-h-0">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2 shrink-0">
+              📍 마커 정보 ({markerInfos.length}/5)
+            </h3>
 
-        {/* 마커 정보 카드들 */}
-        <div className="bg-white rounded-2xl shadow-xl p-3 flex-1">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            📍 마커 정보 ({markerInfos.length}/5)
-          </h3>
-
-          {markerInfos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-              <div className="text-4xl mb-2">📍</div>
-              <div className="text-sm text-center">
-                지도를 클릭하여
-                <br />
-                마커를 추가해주세요!
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2 max-h-80 overflow-y-auto">
-              {markerInfos.map(marker => (
-                <div
-                  key={marker.id}
-                  className={`bg-linear-to-br ${marker.bgColor} to-white p-2 rounded-lg border ${marker.borderColor} hover:shadow-md transition-shadow`}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span
-                      className="font-bold text-sm"
-                      style={{ color: marker.color }}>
-                      {marker.id}번 위치
-                    </span>
-                    <div
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: marker.color }}></div>
-                  </div>
-                  <div className="text-xs text-gray-600 leading-relaxed">
-                    {marker.isSearchingAddress ? (
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        주소 검색 중...
-                      </div>
-                    ) : (
-                      <>
-                        <div className="font-medium mb-1">{marker.address}</div>
-                      </>
-                    )}
+            <div className="flex-1 overflow-hidden min-h-0">
+              {markerInfos.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                  <div className="text-4xl mb-2">📍</div>
+                  <div className="text-sm text-center">
+                    지도를 클릭하여
+                    <br />
+                    마커를 추가해주세요!
                   </div>
                 </div>
-              ))}
+              ) : (
+                <div className="h-full overflow-y-auto space-y-2 pr-2">
+                  {markerInfos.map(marker => (
+                    <div
+                      key={marker.id}
+                      className={`bg-linear-to-br ${marker.bgColor} to-white p-2 rounded-lg border ${marker.borderColor} hover:shadow-md transition-shadow shrink-0`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span
+                          className="font-bold text-sm"
+                          style={{ color: marker.color }}>
+                          {marker.id}번 위치
+                        </span>
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: marker.color }}></div>
+                      </div>
+                      <div className="text-xs text-gray-600 leading-relaxed">
+                        {marker.isSearchingAddress ? (
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            주소 검색 중...
+                          </div>
+                        ) : (
+                          <>
+                            <div className="font-medium mb-1">
+                              {marker.address}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
+
+      {/* AI 패널 토글 버튼 */}
+      <button
+        onClick={() => setIsAIPanelOpen(!isAIPanelOpen)}
+        className={`fixed top-4 right-4 z-40 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300 ${
+          isAIPanelOpen ? 'transform rotate-180' : ''
+        }`}>
+        🤖
+      </button>
+
+      {/* AI 사이드 패널 */}
+      <AISidePanel
+        isOpen={isAIPanelOpen}
+        onClose={() => setIsAIPanelOpen(false)}
+      />
     </div>
   );
 }

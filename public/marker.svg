@@ -8,3 +8,5 @@
   <circle cx="12.5" cy="12.5" r="8" fill="white"/>
   <text x="12.5" y="16" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="COLOR_PLACEHOLDER">NUMBER_PLACEHOLDER</text>
 </svg>
+
+
