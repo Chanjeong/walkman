@@ -1,13 +1,10 @@
-import WalkmanMap from '@/components/WalkmanMap';
+import { cookies } from 'next/headers';
+import HomeContainer from '@/components/HomeContainer';
 
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">🚶‍♂️ Walkman</h1>
+export default async function Home() {
+  // 서버에서 쿠키 확인
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token');
 
-        <WalkmanMap />
-      </div>
-    </div>
-  );
+  return <HomeContainer token={token?.value || ''} />;
 }

@@ -7,7 +7,7 @@ interface AISidePanelProps {
   onClose: () => void;
 }
 
-export const AISidePanel = ({ isOpen, onClose }: AISidePanelProps) => {
+export const AISidePanel = ({ onClose }: AISidePanelProps) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<
     Array<{ type: 'user' | 'ai'; content: string }>
@@ -58,10 +58,8 @@ export const AISidePanel = ({ isOpen, onClose }: AISidePanelProps) => {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 translate-x-0 z-50 flex flex-col">
+    <div className="h-full w-full bg-white shadow-xl flex flex-col">
       {/* 헤더 */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 shrink-0">
         <h2 className="text-lg font-semibold text-gray-800">

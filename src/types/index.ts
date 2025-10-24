@@ -13,3 +13,12 @@ export type {
   DistanceResult,
   RouteDisplayResult
 } from './api';
+
+// 인증 관련 타입
+export type {
+  User,
+  AuthUser,
+  LoginData,
+  SignupData,
+  AuthResponse
+} from './auth';
