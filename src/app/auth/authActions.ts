@@ -1,24 +1,11 @@
 'use server';
 
-import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-// 스키마 정의
-const LoginSchema = z.object({
-  email: z.string().email('올바른 이메일을 입력해주세요'),
-  password: z.string().min(6, '비밀번호는 최소 6자 이상이어야 합니다')
-});
-
-const SignupSchema = z.object({
-  email: z.string().email('올바른 이메일을 입력해주세요'),
-  password: z.string().min(6, '비밀번호는 최소 6자 이상이어야 합니다'),
-  name: z.string().optional()
-});
 
 export async function loginAction(
   prevState: { success: boolean; message: string },
@@ -30,12 +17,9 @@ export async function loginAction(
       password: formData.get('password') as string
     };
 
-    // 유효성 검사
-    const validatedData = LoginSchema.parse(rawData);
-
     // 사용자 찾기
     const user = await prisma.user.findUnique({
-      where: { email: validatedData.email }
+      where: { email: rawData.email }
     });
 
     if (!user) {
@@ -47,7 +31,7 @@ export async function loginAction(
 
     // 비밀번호 확인
     const isValidPassword = await bcrypt.compare(
-      validatedData.password,
+      rawData.password,
       user.password
     );
     if (!isValidPassword) {
@@ -89,12 +73,9 @@ export async function signupAction(
       name: (formData.get('name') as string) || undefined
     };
 
-    // 유효성 검사
-    const validatedData = SignupSchema.parse(rawData);
-
     // 이메일 중복 확인
     const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email }
+      where: { email: rawData.email }
     });
 
     if (existingUser) {
@@ -102,14 +83,14 @@ export async function signupAction(
     }
 
     // 비밀번호 해싱
-    const hashedPassword = await bcrypt.hash(validatedData.password, 12);
+    const hashedPassword = await bcrypt.hash(rawData.password, 12);
 
     // 사용자 생성
     const user = await prisma.user.create({
       data: {
-        email: validatedData.email,
+        email: rawData.email,
         password: hashedPassword,
-        name: validatedData.name || null
+        name: rawData.name || null
       }
     });
 

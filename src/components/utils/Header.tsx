@@ -15,7 +15,6 @@ export default function Header({ token }: HeaderProps) {
       </h1>
       {token ? (
         <div className="flex items-center space-x-4">
-          <span className="text-gray-700">안녕하세요!</span>
           <LogoutButton />
         </div>
       ) : (

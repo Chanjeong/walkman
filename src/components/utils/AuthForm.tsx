@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useActionState } from 'react';
+import { useState, useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { loginAction, signupAction } from '@/app/auth/authActions';
 import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-// 스키마 정의
+// 스키마 정의 (클라이언트에서만 사용)
 const LoginSchema = z.object({
   email: z.string().email('올바른 이메일을 입력해주세요'),
   password: z.string().min(6, '비밀번호는 최소 6자 이상이어야 합니다')
@@ -60,17 +64,22 @@ export default function AuthForm() {
     }
   });
 
-  if (loginState.success) {
-    toast.success(loginState.message);
-    router.push('/');
-    router.refresh();
-  }
+  // 성공 시 리다이렉트 처리
+  useEffect(() => {
+    if (loginState.success) {
+      toast.success(loginState.message);
+      router.push('/');
+      router.refresh();
+    }
+  }, [loginState.success, loginState.message, router]);
 
-  if (signupState.success) {
-    toast.success(signupState.message);
-    router.push('/');
-    router.refresh();
-  }
+  useEffect(() => {
+    if (signupState.success) {
+      toast.success(signupState.message);
+      router.push('/');
+      router.refresh();
+    }
+  }, [signupState.success, signupState.message, router]);
 
   const handleTabChange = (newIsLogin: boolean) => {
     setIsLogin(newIsLogin);
@@ -83,24 +92,26 @@ export default function AuthForm() {
     <>
       {/* 탭 버튼 */}
       <div className="flex mb-8 bg-gray-100 rounded-lg p-1">
-        <button
+        <Button
           onClick={() => handleTabChange(true)}
-          className={`flex-1 py-2 px-4 rounded-md transition-colors ${
+          variant={isLogin ? 'default' : 'ghost'}
+          className={`flex-1 py-2 px-4 rounded-md ${
             isLogin
               ? 'bg-white text-blue-600 shadow-sm'
               : 'text-gray-600 hover:text-gray-800'
           }`}>
           로그인
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => handleTabChange(false)}
-          className={`flex-1 py-2 px-4 rounded-md transition-colors ${
+          variant={!isLogin ? 'default' : 'ghost'}
+          className={`flex-1 py-2 px-4 rounded-md ${
             !isLogin
               ? 'bg-white text-blue-600 shadow-sm'
               : 'text-gray-600 hover:text-gray-800'
           }`}>
           회원가입
-        </button>
+        </Button>
       </div>
 
       {/* 로그인 폼 */}
@@ -112,11 +123,11 @@ export default function AuthForm() {
               className="block text-sm font-medium text-gray-700 mb-2">
               이메일
             </label>
-            <input
+            <Input
               {...loginForm.register('email')}
               type="email"
               id="login-email"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full"
               placeholder="이메일을 입력하세요"
             />
             {loginForm.formState.errors.email && (
@@ -132,11 +143,11 @@ export default function AuthForm() {
               className="block text-sm font-medium text-gray-700 mb-2">
               비밀번호
             </label>
-            <input
+            <Input
               {...loginForm.register('password')}
               type="password"
               id="login-password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full"
               placeholder="비밀번호를 입력하세요 (최소 6자)"
             />
             {loginForm.formState.errors.password && (

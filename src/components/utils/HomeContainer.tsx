@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Header from '@/components/Header';
+import Header from '@/components/utils/Header';
 import WalkmanMap from '@/components/Map/WalkmanMap';
 import { AISidePanel } from '@/components/Map/AISidePanel';
 
@@ -27,12 +27,12 @@ export default function HomeContainer({ token }: HomeContainerProps) {
       {/* 토글 버튼 */}
       <button
         onClick={() => setIsAIPanelOpen(!isAIPanelOpen)}
-        className="fixed top-4 right-4 z-40 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300">
+        className="fixed top-4 right-4 z-40 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300">
         🤖
       </button>
 
       {/* AISidePanel 영역 - isAIPanelOpen일 때만 표시 */}
-      <div className={`${isAIPanelOpen ? 'col-span-1 block' : 'hidden'}`}>
+      <div className={`${isAIPanelOpen ? 'col-span-1 block' : 'hidden'} `}>
         <AISidePanel
           isOpen={isAIPanelOpen}
           onClose={() => setIsAIPanelOpen(false)}

@@ -8,6 +8,8 @@ import * as L from 'leaflet';
 import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
 import type { MarkerInfo } from '@/types';
+import { PlusIcon } from '@heroicons/react/24/outline';
+import CourseModal from './CourseModal';
 
 export default function WalkmanMap() {
   // 커스텀 훅들
@@ -35,6 +37,7 @@ export default function WalkmanMap() {
   const [markerInfos, setMarkerInfos] = useState<MarkerInfo[]>([]);
   const [walkingDistance, setWalkingDistance] = useState('- km');
   const [walkingTime, setWalkingTime] = useState('- 분');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 거리 계산 및 표시
   const calculateAndDisplayDistance = useCallback(async () => {
@@ -86,6 +89,14 @@ export default function WalkmanMap() {
   // 마커 클릭 핸들러
   const onMapClick = useCallback(
     async (e: L.LeafletMouseEvent) => {
+      // 버튼 클릭인지 확인 (이벤트 타겟이 버튼인지 체크)
+      if (e.originalEvent && e.originalEvent.target) {
+        const target = e.originalEvent.target as HTMLElement;
+        if (target.closest('button')) {
+          return; // 버튼 클릭이면 마커 생성하지 않음
+        }
+      }
+
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
 
@@ -424,15 +435,9 @@ export default function WalkmanMap() {
       toast.success(
         `엑셀 파일에서 ${validatedData.length}개의 마커를 성공적으로 가져왔습니다.`
       );
-    } catch (error) {
-      console.error('엑셀 파일 가져오기 실패:', error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : '엑셀 파일을 읽는 중 오류가 발생했습니다.'
-      );
+    } catch {
+      toast.error('엑셀 파일을 읽는 중 오류가 발생했습니다.');
     } finally {
-      // 파일 입력 초기화 (성공/실패 관계없이 항상 실행)
       event.target.value = '';
     }
   };
@@ -440,8 +445,18 @@ export default function WalkmanMap() {
   return (
     <div className="flex h-[calc(100vh-8rem)] p-2 w-full gap-6">
       {/* 지도 영역 */}
-      <div className="flex-1 rounded-2xl shadow-xl overflow-hidden">
-        <div id="map" className="h-full w-full"></div>
+      <div className="flex-1 rounded-2xl shadow-xl overflow-hidden relative">
+        <div id="map" className="h-full w-full relative">
+          {markerInfos.length > 0 && (
+            <button
+              onClick={() => {
+                setIsModalOpen(true);
+              }}
+              className="absolute top-4 right-4 z-[9999] bg-primary text-white px-4 py-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-100 flex items-center gap-2">
+              <PlusIcon className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 정보 영역 */}
@@ -465,7 +480,7 @@ export default function WalkmanMap() {
               onClick={handleSearchAddress}
               disabled={isAddressSearching || !searchQuery.trim()}
               className="shrink-0 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed">
-              {isAddressSearching ? '검색 중...' : '검색'}
+              검색
             </button>
           </div>
         </div>
@@ -571,6 +586,13 @@ export default function WalkmanMap() {
           </div>
         </div>
       </div>
+
+      {/* 코스 저장 모달 */}
+      <CourseModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        markers={markerInfos}
+      />
     </div>
   );
 }

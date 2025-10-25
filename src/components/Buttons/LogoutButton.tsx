@@ -4,6 +4,7 @@ import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { logoutAction } from '@/app/auth/authActions';
 import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
 
 export default function LogoutButton() {
   const [isPending, startTransition] = useTransition();
@@ -15,7 +16,7 @@ export default function LogoutButton() {
 
       if (result.success) {
         toast.success(result.message);
-        router.push('/');
+        router.push('/auth');
         router.refresh();
       } else {
         toast.error(result.message);
@@ -24,11 +25,12 @@ export default function LogoutButton() {
   };
 
   return (
-    <button
+    <Button
       onClick={handleLogout}
       disabled={isPending}
-      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+      variant="destructive"
+      className="px-4 py-2">
       {isPending ? '처리 중...' : '로그아웃'}
-    </button>
+    </Button>
   );
 }

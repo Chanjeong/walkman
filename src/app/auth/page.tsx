@@ -1,17 +1,6 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import AuthForm from '../../components/AuthForm';
+import AuthForm from '@/components/utils/AuthForm';
 
 export default async function AuthPage() {
-  // 서버에서 쿠키 확인
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token');
-
-  // 이미 로그인된 경우 홈으로 리다이렉트
-  if (token) {
-    redirect('/');
-  }
-
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
